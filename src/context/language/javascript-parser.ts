@@ -2,6 +2,7 @@ import { AbstractParser, EnclosingContext } from "../../constants";
 import * as parser from "@babel/parser";
 import traverse, { NodePath, Node } from "@babel/traverse";
 
+
 const processNode = (
   path: NodePath<Node>,
   lineStart: number,
