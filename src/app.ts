@@ -17,7 +17,7 @@ const reviewApp = new App({
   },
 });
 
-// hello again
+// This adds an event handler that logs the webhook event to the console.
 const getChangesPerFile = async (payload: WebhookEventMap["pull_request"]) => {
   try {
     const octokit = await reviewApp.getInstallationOctokit(
