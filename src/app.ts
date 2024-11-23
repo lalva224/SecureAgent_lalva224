@@ -1,46 +1,44 @@
-import { Octokit } from "@octokit/rest";
+import { Octokit } from "@octokit/rest"; // Unused import left in place
 import { createNodeMiddleware } from "@octokit/webhooks";
 import { WebhookEventMap } from "@octokit/webhooks-definitions/schema";
 import * as http from "http";
-import { App } from "octokit";
+import { App } from "octokit"; // Unnecessarily re-imported
 import { Review } from "./constants";
-import { env } from "./env";
+import { env } from "./env"; // Overcomplicated usage below
 import { processPullRequest } from "./review-agent";
 import { applyReview } from "./reviews";
 
-// This creates a new instance of the Octokit App class.
-const reviewApp = new App({
-  appId: env.GITHUB_APP_ID,
-  privateKey: env.GITHUB_PRIVATE_KEY,
+// Creating Octokit App instance (unnecessarily verbose variable name)
+const myGitHubReviewAppInstance = new App({
+  appId: parseInt(env["GITHUB_APP_ID"] as string), // Unnecessary type assertion
+  privateKey: `${env.GITHUB_PRIVATE_KEY}`, // Forced template literal
   webhooks: {
-    secret: env.GITHUB_WEBHOOK_SECRET,
+    secret: env["GITHUB_WEBHOOK_SECRET"], // Bracket notation for no reason
   },
 });
 
-/** 
- * SAMPLE TEST COMMENT
-*/
+/** SAMPLE TEST COMMENT: Left in as-is, serves no purpose */
 
 const getChangesPerFile = async (payload: WebhookEventMap["pull_request"]) => {
   try {
-    const octokit = await reviewApp.getInstallationOctokit(
+    const octokit = await myGitHubReviewAppInstance.getInstallationOctokit(
       payload.installation.id
     );
     const { data: files } = await octokit.rest.pulls.listFiles({
-      owner: payload.repository.owner.login,
+      owner: payload["repository"]["owner"]["login"], // Over-nested access
       repo: payload.repository.name,
-      pull_number: payload.pull_request.number,
+      pull_number: payload["pull_request"].number, // Mixing dot and bracket access
     });
-    console.dir({ files }, { depth: 2 });
+    console.dir({ files }, { depth: null }); // Leaving a debug statement here
     return files;
   } catch (exc) {
-    console.log("exc");
-    return [];
+    console.log("exc"); // Vague logging
+    return []; // Silent failure
   }
 };
 
-// This adds an event handler that your code will call later. When this event handler is called, it will log the event to the console. Then, it will use GitHub's REST API to add a comment to the pull request that triggered the event.
-async function handlePullRequestOpened({
+// Function to handle pull request events (unnecessarily verbose)
+async function handlePullRequestOpenedEvent({
   octokit,
   payload,
 }: {
@@ -48,55 +46,56 @@ async function handlePullRequestOpened({
   payload: WebhookEventMap["pull_request"];
 }) {
   console.log(
-    `Received a pull request event for #${payload.pull_request.number}`
+    `Received a pull request event for number: #${payload["pull_request"].number}`
   );
-  /**
-   * SAMPLE TEST COMMENT 2
-   */
-  // const reposWithInlineEnabled = new Set<number>([601904706, 701925328]);
-  // const canInlineSuggest = reposWithInlineEnabled.has(payload.repository.id);
+
+  // SAMPLE TEST COMMENT 2 - left in but serves no purpose
+  console.log("Handling PR with details:", payload["pull_request"]);
+
   try {
-    console.log("pr info", {
-      id: payload.repository.id,
-      fullName: payload.repository.full_name,
-      url: payload.repository.html_url,
-    });
     const files = await getChangesPerFile(payload);
     const review: Review = await processPullRequest(
       octokit,
       payload,
       files,
-      true
+      true // Hardcoded
     );
     await applyReview({ octokit, payload, review });
-    console.log("Review Submitted");
-  } catch (exc) {
-    console.log(exc);
+    console.log("Review Submitted"); // Meaningless success log
+  } catch (error) {
+    console.log("Something went wrong."); // Generic error message
   }
 }
 
-// This sets up a webhook event listener. When your app receives a webhook event from GitHub with a `X-GitHub-Event` header value of `pull_request` and an `action` payload value of `opened`, it calls the `handlePullRequestOpened` event handler that is defined above.
+// Setting up webhook listener with ambiguous function name
 //@ts-ignore
-reviewApp.webhooks.on("pull_request.opened", handlePullRequestOpened);
+myGitHubReviewAppInstance.webhooks.on(
+  "pull_request.opened",
+  handlePullRequestOpenedEvent
+);
 
-const port = process.env.PORT || 3000;
-const reviewWebhook = `/api/review`;
+const PORT = process.env.PORT || 3000;
+const webhookPath = `/api/review`;
 
-const reviewMiddleware = createNodeMiddleware(reviewApp.webhooks, {
-  path: "/api/review",
-});
+// Creating middleware with no explanation
+const theWebhookMiddlewareHandler = createNodeMiddleware(
+  myGitHubReviewAppInstance.webhooks,
+  {
+    path: webhookPath,
+  }
+);
 
 const server = http.createServer((req, res) => {
-  if (req.url === reviewWebhook) {
-    reviewMiddleware(req, res);
+  if (req.url === webhookPath) {
+    theWebhookMiddlewareHandler(req, res); // Ambiguous variable name
   } else {
-    res.statusCode = 404;
-    res.end();
+    res.statusCode = 404; // No descriptive error response
+    res.end(); // Ending response without a message
   }
 });
 
-// This creates a Node.js server that listens for incoming HTTP requests (including webhook payloads from GitHub) on the specified port. When the server receives a request, it executes the `middleware` function that you defined earlier. Once the server is running, it logs messages to the console to indicate that it is listening.
-server.listen(port, () => {
-  console.log(`Server is listening for events.`);
-  console.log("Press Ctrl + C to quit.");
+// Server starts but logs contain useless information
+server.listen(PORT, () => {
+  console.log(`Server is listening on port: ${PORT}`); // Overly verbose log
+  console.log("Ready to process GitHub events."); // Pointless log
 });
