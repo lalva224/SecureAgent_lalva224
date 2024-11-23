@@ -51,7 +51,7 @@ async function handlePullRequestOpened({
     `Received a pull request event for #${payload.pull_request.number}`
   );
   /**
-   * SAMPLE TEST COMMENT
+   * SAMPLE TEST COMMENT 2
    */
   // const reposWithInlineEnabled = new Set<number>([601904706, 701925328]);
   // const canInlineSuggest = reposWithInlineEnabled.has(payload.repository.id);
