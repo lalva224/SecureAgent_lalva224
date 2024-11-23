@@ -31,7 +31,7 @@ const getChangesPerFile = async (payload: WebhookEventMap["pull_request"]) => {
       repo: payload.repository.name,
       pull_number: payload.pull_request.number,
     });
-    console.dir({ files }, { depth: null });
+    console.dir({ files }, { depth: 2 });
     return files;
   } catch (exc) {
     console.log("exc");
@@ -50,6 +50,9 @@ async function handlePullRequestOpened({
   console.log(
     `Received a pull request event for #${payload.pull_request.number}`
   );
+  /**
+   * SAMPLE TEST COMMENT
+   */
   // const reposWithInlineEnabled = new Set<number>([601904706, 701925328]);
   // const canInlineSuggest = reposWithInlineEnabled.has(payload.repository.id);
   try {
