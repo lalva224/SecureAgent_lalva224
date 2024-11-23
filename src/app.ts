@@ -17,8 +17,7 @@ const reviewApp = new App({
   },
 });
 
-// hellooo
-//hiiii
+// hello again
 const getChangesPerFile = async (payload: WebhookEventMap["pull_request"]) => {
   try {
     const octokit = await reviewApp.getInstallationOctokit(
