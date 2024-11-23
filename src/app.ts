@@ -18,7 +18,7 @@ const reviewApp = new App({
 });
 
 /** 
- * Test again and again!!
+ * Never give up!!
 */
 
 const getChangesPerFile = async (payload: WebhookEventMap["pull_request"]) => {
